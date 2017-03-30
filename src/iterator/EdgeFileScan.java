@@ -5,24 +5,25 @@ import heap.*;
 import global.*;
 import bufmgr.*;
 import diskmgr.*;
+import edgeheap.*;
 import edgeheap.EScan;
 
 import java.lang.*;
 import java.io.*;
 
 /**
- *open a heapfile and according to the condition expression to get
- *output file, call get_next to get all tuples
+ *open an edgeheapfile and according to the condition expression to get
+ *output file, call get_next to get all edges
  */
-public class FileScan extends  Iterator
+public class EdgeFileScan extends  Iterator
 {
   private AttrType[] _in1;
   private short in1_len;
   private short[] s_sizes; 
   private Heapfile f;
   private EScan eScan;
-  private Tuple     tuple1;
-  private Tuple    Jtuple;
+  private Edge     tuple1;
+  private Edge    Jtuple;
   private int        t1_size;
   private int nOutFlds;
   private CondExpr[]  OutputFilter;
@@ -79,7 +80,7 @@ public class FileScan extends  Iterator
       t1_size = tuple1.size();
       
       try {
-	f = new Heapfile(file_name);
+	f = new EdgeHeapfile(file_name);
 	
       }
       catch(Exception e) {
@@ -114,7 +115,7 @@ public class FileScan extends  Iterator
    *@exception FieldNumberOutOfBoundException array out of bounds
    *@exception WrongPermat exception for wrong FldSpec argument
    */
-  public Tuple get_next()
+  public Edge get_next()
     throws JoinsException,
 	   IOException,
 	   InvalidTupleSizeException,
@@ -125,7 +126,7 @@ public class FileScan extends  Iterator
 	   FieldNumberOutOfBoundException,
 	   WrongPermat
     {     
-      RID rid = new RID();;
+      EID rid = new EID();;
       
       while(true) {
 	if((tuple1 =  eScan.getNext(rid)) == null) {
