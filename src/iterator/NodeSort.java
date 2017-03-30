@@ -15,7 +15,7 @@ import chainexception.*;
  * After the sorting is done, the user should call <code>close()</code>
  * to clean up.
  */
-public class Sort extends Iterator implements GlobalConst
+public class NodeSort extends Iterator implements GlobalConst
 {
   private static final int ARBIT_RUNS = 10;
   
@@ -32,6 +32,8 @@ public class Sort extends Iterator implements GlobalConst
   private int         max_elems_in_heap;
   private int         sortFldLen;
   private int         tuple_size;
+  private double      _distance;
+  private Descriptor  _target;
   
   private pnodeSplayPQ Q;
   private Heapfile[]   temp_files; 
@@ -205,13 +207,13 @@ public class Sort extends Iterator implements GlobalConst
     
     // now the queue is full, starting writing to file while keep trying
     // to add new tuples to the queue. The ones that does not fit are put
-    // on the other queue temperarily
+    // on the other queue temporarily
     while (true) {
       cur_node = pcurr_Q.deq();
       if (cur_node == null) break; 
       p_elems_curr_Q --;
       
-      comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
+      comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem, _distance, _target);  // need tuple_utils.java
       
       if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && order.tupleOrder == TupleOrder.Descending)) {
 	// doesn't fit in current run, put into the other queue
@@ -545,27 +547,34 @@ public class Sort extends Iterator implements GlobalConst
   /** 
    * Class constructor, take information about the tuples, and set up 
    * the sorting
-   * @param in array containing attribute types of the relation
-   * @param len_in number of columns in the relation
-   * @param str_sizes array of sizes of string attributes
-   * @param am an iterator for accessing the tuples
-   * @param sort_fld the field number of the field to sort on
-   * @param sort_order the sorting order (ASCENDING, DESCENDING)
-   * @param sort_field_len the length of the sort field
-   * @param n_pages amount of memory (in pages) available for sorting
+   * @param in 				array containing attribute types of the relation
+   * @param len_in 			number of columns in the relation
+   * @param str_sizes 		array of sizes of string attributes
+   * @param am 				an iterator for accessing the tuples
+   * @param sort_fld 		the field number of the field to sort on
+   * @param sort_order 		the sorting order (ASCENDING, DESCENDING)
+   * @param sort_field_len 	the length of the sort field
+   * @param n_pages 		amount of memory (in pages) available for sorting
+   * @param	distance		Euclidean distance between the descriptors
+   * @param	target			target descriptor
    * @exception IOException from lower layers
    * @exception SortException something went wrong in the lower layer. 
    */
-  public Sort(AttrType[] in,         
+  public NodeSort(AttrType[] in,
 	      short      len_in,             
 	      short[]    str_sizes,
 	      Iterator   am,                 
 	      int        sort_fld,          
 	      TupleOrder sort_order,     
 	      int        sort_fld_len,  
-	      int        n_pages      
+	      int        n_pages,
+	      double	 distance,
+	      Descriptor target
 	      ) throws IOException, SortException
   {
+	  _distance = distance;
+	  _target = target;
+	  
     _in = new AttrType[len_in];
     n_cols = len_in;
     int n_strs = 0;
